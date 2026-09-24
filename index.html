@@ -9,9 +9,18 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0d2a2a">
-<title>Clearwater — real-time water</title>
+<title>Hanabi</title>
+<meta name="description" content="Fireworks and synchronized drone shows reflected on moonlit water.">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Hanabi">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="media/icons/hanabi.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="media/icons/apple-touch-icon.png">
+<script src="pwa.js" defer></script>
+
 <style>
-  :root { --ink: rgba(255,255,255,.86); box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px); }
+  :root { --ink: rgba(255,255,255,.86); box-sizing:border-box; }
   html { scroll-padding-top:env(safe-area-inset-top,0px); }
   html, body { margin:0; height:100%; background:#0d2a2a; overflow:hidden; touch-action:none; -webkit-user-select:none; user-select:none; }
   canvas { position:fixed; inset:0; width:100%; height:100%; display:block; cursor:grab; }
@@ -38,17 +47,22 @@
   #credit i { width:1px; height:14px; background:rgba(255,255,255,.18); }
   @media (prefers-reduced-motion: reduce) { #hint { transition:none; } }
 </style>
+<link rel="stylesheet" href="experience.css">
 </head>
 <body>
-<canvas id="c"></canvas>
+<canvas id="c" tabindex="0" aria-label="Water and fireworks. Hold Space for a larger firework."></canvas>
 <div id="hint">Drag to look around · tap the water</div>
 <div id="credit">
-  <a href="https://x.com/Aurelien_Gz" target="_blank" rel="noopener" title="Aurélien on X"><img alt="" src="data:image/jpeg;base64,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"><span>Aurélien</span></a>
+  <a href="https://x.com/Aurelien_Gz" target="_blank" rel="noopener" title="Aurélien on X"><span>Aurélien</span></a>
   <i></i>
   <a href="https://lumaris.works" target="_blank" rel="noopener" title="Lumaris studio"><svg class="wm" viewBox="0 0 288 60" fill="currentColor" role="img" aria-label="Lumaris"><path d="M273.046 25.2709C273.046 26.8759 273.614 28.1677 274.749 29.1464C275.884 30.1251 277.567 31.2016 279.799 32.376C281.482 33.2372 282.813 34.0006 283.792 34.6661C284.809 35.3316 285.671 36.1732 286.375 37.191C287.08 38.2089 287.432 39.4028 287.432 40.773C287.432 42.2997 287.002 43.6894 286.14 44.9421C285.279 46.1948 284.066 47.193 282.5 47.9368C280.934 48.6414 279.153 48.9938 277.156 48.9938C275.473 48.9938 273.868 48.7785 272.341 48.3478C270.815 47.9564 269.679 47.467 268.936 46.8798C268.622 46.7233 268.446 46.3122 268.407 45.6467L268.055 39.305V39.2462C268.055 39.0897 268.153 39.0114 268.348 39.0114C268.544 38.9722 268.681 39.0309 268.759 39.1875C269.816 41.5363 271.147 43.5524 272.752 45.2357C274.357 46.919 276.158 47.7606 278.155 47.7606C279.368 47.7606 280.405 47.3887 281.267 46.645C282.128 45.9012 282.559 44.7855 282.559 43.2979C282.559 41.4972 281.952 40.0487 280.738 38.9526C279.564 37.8174 277.822 36.643 275.512 35.4294C273.946 34.5682 272.694 33.8244 271.754 33.1981C270.854 32.5326 270.071 31.7301 269.405 30.7906C268.779 29.851 268.466 28.7354 268.466 27.4435C268.466 25.173 269.405 23.3918 271.284 22.1C273.202 20.769 275.512 20.1035 278.213 20.1035C279.388 20.1035 280.582 20.2405 281.795 20.5146C283.048 20.7494 284.105 21.0626 284.966 21.4541C285.318 21.6107 285.553 21.7672 285.671 21.9238C285.788 22.0804 285.847 22.2957 285.847 22.5698L285.964 27.972C285.964 28.1286 285.866 28.2265 285.671 28.2656C285.475 28.3047 285.338 28.2656 285.26 28.1482C285.025 27.3652 284.555 26.4453 283.85 25.3883C283.185 24.3314 282.265 23.3918 281.091 22.5698C279.955 21.7085 278.663 21.2779 277.215 21.2779C275.845 21.2779 274.807 21.6498 274.103 22.3936C273.398 23.1374 273.046 24.0965 273.046 25.2709Z" /><path d="M260.141 43.5323C260.141 44.7067 260.239 45.5875 260.435 46.1747C260.63 46.7227 261.002 47.0946 261.55 47.2903C262.098 47.4861 262.96 47.5839 264.134 47.5839C264.212 47.5839 264.251 47.7014 264.251 47.9363C264.251 48.1711 264.212 48.2886 264.134 48.2886C262.96 48.2886 262.04 48.269 261.374 48.2299L257.499 48.1711L253.858 48.2299C253.153 48.269 252.194 48.2886 250.981 48.2886C250.902 48.2886 250.863 48.1711 250.863 47.9363C250.863 47.7014 250.902 47.5839 250.981 47.5839C252.194 47.5839 253.075 47.4861 253.623 47.2903C254.171 47.0946 254.543 46.7227 254.739 46.1747C254.935 45.5875 255.032 44.7067 255.032 43.5323V25.5639C255.032 24.3895 254.935 23.5283 254.739 22.9803C254.543 22.4322 254.152 22.0603 253.564 21.8646C253.016 21.6297 252.155 21.5123 250.981 21.5123C250.902 21.5123 250.863 21.3948 250.863 21.1599C250.863 20.9251 250.902 20.8076 250.981 20.8076L253.858 20.8663C255.346 20.9446 256.559 20.9838 257.499 20.9838C258.556 20.9838 259.867 20.9446 261.433 20.8663L264.134 20.8076C264.212 20.8076 264.251 20.9251 264.251 21.1599C264.251 21.3948 264.212 21.5123 264.134 21.5123C262.96 21.5123 262.098 21.6297 261.55 21.8646C261.002 22.0995 260.63 22.5105 260.435 23.0977C260.239 23.6458 260.141 24.507 260.141 25.6814V43.5323Z" /><path d="M233.071 47.5843C233.15 47.5843 233.189 47.7018 233.189 47.9366C233.189 48.1715 233.15 48.289 233.071 48.289C231.936 48.289 231.036 48.2694 230.37 48.2302L226.495 48.1715L222.854 48.2302C222.149 48.2694 221.19 48.289 219.977 48.289C219.899 48.289 219.859 48.1715 219.859 47.9366C219.859 47.7018 219.899 47.5843 219.977 47.5843C221.151 47.5843 222.012 47.4864 222.561 47.2907C223.109 47.095 223.48 46.7231 223.676 46.175C223.872 45.5878 223.97 44.707 223.97 43.5326V25.5643C223.97 24.3899 223.872 23.5287 223.676 22.9806C223.48 22.4326 223.109 22.0607 222.561 21.865C222.012 21.6301 221.171 21.5126 220.036 21.5126C219.957 21.5126 219.918 21.3952 219.918 21.1603C219.918 20.9254 219.957 20.808 220.036 20.808L222.913 20.8667C224.4 20.945 225.594 20.9842 226.495 20.9842C227.239 20.9842 227.924 20.9646 228.55 20.9254C229.176 20.8863 229.724 20.8471 230.194 20.808C231.486 20.6906 232.66 20.6318 233.717 20.6318C236.614 20.6318 238.806 21.1212 240.294 22.0998C241.821 23.0785 242.584 24.4878 242.584 26.3277C242.584 27.9327 242.056 29.4203 240.999 30.7904C239.942 32.1605 238.493 33.2566 236.653 34.0787C234.813 34.8617 232.797 35.2531 230.605 35.2531C229.352 35.2531 228.276 35.1748 227.376 35.0182L227.317 33.7851C228.295 34.0591 229.529 34.1962 231.016 34.1962C233.326 34.1962 234.931 33.6677 235.831 32.6107C236.732 31.5538 237.182 29.9879 237.182 27.9131C237.182 23.7636 235.557 21.6888 232.308 21.6888C231.016 21.6888 230.175 21.9628 229.783 22.5109C229.392 23.0198 229.196 24.0767 229.196 25.6818V43.5326C229.196 44.7462 229.274 45.627 229.431 46.175C229.626 46.7231 229.979 47.095 230.488 47.2907C231.036 47.4864 231.897 47.5843 233.071 47.5843ZM250.864 47.5843C250.981 47.5843 251.04 47.7018 251.04 47.9366C251.04 48.1715 250.981 48.289 250.864 48.289H242.173C241.547 48.289 240.392 47.0754 238.708 44.6483C237.064 42.1821 235.127 38.8546 232.895 34.6659L237.006 33.4328C239.198 37.1126 241.057 39.9703 242.584 42.0059C244.15 44.0024 245.559 45.4313 246.812 46.2925C248.104 47.1537 249.454 47.5843 250.864 47.5843Z" /><path d="M197.333 34.0788H208.078L208.49 35.4293H196.452L197.333 34.0788ZM219.294 47.5844C219.451 47.5844 219.529 47.7018 219.529 47.9367C219.529 48.1716 219.451 48.289 219.294 48.289C218.511 48.289 217.298 48.2499 215.653 48.1716C214.009 48.0933 212.835 48.0541 212.13 48.0541C211.465 48.0541 210.506 48.0933 209.253 48.1716C208 48.2499 207.1 48.289 206.552 48.289C206.395 48.289 206.317 48.1716 206.317 47.9367C206.317 47.7018 206.395 47.5844 206.552 47.5844C207.491 47.5844 208.157 47.4669 208.548 47.2321C208.979 46.9972 209.194 46.6253 209.194 46.1164C209.194 45.5683 208.901 44.6484 208.313 43.3565L200.386 26.2103L202.559 22.8045L194.984 41.0665C194.318 42.7106 193.986 43.9633 193.986 44.8245C193.986 45.8032 194.318 46.5079 194.984 46.9385C195.689 47.3691 196.746 47.5844 198.155 47.5844C198.351 47.5844 198.448 47.7018 198.448 47.9367C198.448 48.1716 198.351 48.289 198.155 48.289C197.607 48.289 196.824 48.2499 195.806 48.1716C194.71 48.0933 193.692 48.0541 192.753 48.0541C191.774 48.0541 190.619 48.0933 189.288 48.1716C188.114 48.2499 187.155 48.289 186.411 48.289C186.215 48.289 186.117 48.1716 186.117 47.9367C186.117 47.7018 186.215 47.5844 186.411 47.5844C187.624 47.5844 188.603 47.4082 189.347 47.0559C190.091 46.7036 190.776 46.0577 191.402 45.1181C192.028 44.1395 192.772 42.6128 193.633 40.538L202.324 19.9273C202.402 19.7707 202.52 19.6924 202.676 19.6924C202.833 19.6924 202.931 19.7707 202.97 19.9273L212.424 40.2444C213.402 42.3583 214.205 43.9242 214.831 44.942C215.497 45.9598 216.143 46.6644 216.769 47.0559C217.435 47.4082 218.276 47.5844 219.294 47.5844Z" /><path d="M153.788 22.0995L154.962 22.2756L154.551 41.1835C154.512 43.4148 154.825 45.0394 155.491 46.0572C156.195 47.075 157.292 47.5839 158.779 47.5839C158.897 47.5839 158.955 47.7014 158.955 47.9363C158.955 48.1711 158.897 48.2886 158.779 48.2886C157.879 48.2886 157.174 48.269 156.665 48.2299L153.964 48.1711L151.263 48.2299C150.754 48.269 149.991 48.2886 148.973 48.2886C148.895 48.2886 148.855 48.1711 148.855 47.9363C148.855 47.7014 148.895 47.5839 148.973 47.5839C150.5 47.5839 151.596 47.075 152.261 46.0572C152.966 45.0394 153.338 43.4148 153.377 41.1835L153.788 22.0995ZM186.025 47.5839C186.104 47.5839 186.143 47.7014 186.143 47.9363C186.143 48.1711 186.104 48.2886 186.025 48.2886C184.968 48.2886 184.127 48.269 183.5 48.2299L179.977 48.1711L175.984 48.2299C175.319 48.269 174.399 48.2886 173.224 48.2886C173.146 48.2886 173.107 48.1711 173.107 47.9363C173.107 47.7014 173.146 47.5839 173.224 47.5839C174.477 47.5839 175.397 47.4861 175.984 47.2903C176.571 47.0555 176.963 46.664 177.159 46.1159C177.354 45.5679 177.413 44.7067 177.335 43.5323L176.336 23.2739L177.804 21.5123L166.941 47.8775C166.863 48.0341 166.726 48.1124 166.53 48.1124C166.295 48.1124 166.139 48.0341 166.06 47.8775L154.669 25.6814C153.847 24.0764 152.985 22.9803 152.085 22.3931C151.185 21.8059 150.245 21.5123 149.267 21.5123C149.149 21.5123 149.09 21.3948 149.09 21.1599C149.09 20.9251 149.149 20.8076 149.267 20.8076L153.553 20.8663L156.9 20.8076C157.409 20.8076 157.82 21.0034 158.133 21.3948C158.486 21.7471 158.994 22.5692 159.66 23.8611L168.82 41.6532L166.471 46.2334L176.336 22.2756C176.493 21.845 176.728 21.4927 177.041 21.2187C177.393 20.9446 177.746 20.8076 178.098 20.8076L181.563 20.8663L185.849 20.8076C185.927 20.8076 185.967 20.9251 185.967 21.1599C185.967 21.3948 185.927 21.5123 185.849 21.5123C184.283 21.5123 183.168 21.7863 182.502 22.3343C181.876 22.8432 181.602 23.8806 181.68 25.4465L182.619 43.5323C182.698 44.7458 182.815 45.6266 182.972 46.1747C183.128 46.7227 183.422 47.0946 183.853 47.2903C184.322 47.4861 185.047 47.5839 186.025 47.5839Z" /><path d="M142.497 27.2668C142.497 25.192 142.125 23.724 141.382 22.8628C140.638 21.9624 139.385 21.5123 137.624 21.5123C137.506 21.5123 137.447 21.3948 137.447 21.1599C137.447 20.9251 137.506 20.8076 137.624 20.8076L140.09 20.8663C141.343 20.9446 142.36 20.9838 143.143 20.9838C143.77 20.9838 144.67 20.9446 145.844 20.8663L148.193 20.8076C148.271 20.8076 148.311 20.9251 148.311 21.1599C148.311 21.3948 148.271 21.5123 148.193 21.5123C146.627 21.5123 145.512 21.9624 144.846 22.8628C144.181 23.724 143.848 25.192 143.848 27.2668V37.4841C143.848 41.1247 142.83 43.9629 140.794 45.9985C138.798 48.0341 136.097 49.0519 132.691 49.0519C130.499 49.0519 128.483 48.6213 126.643 47.7601C124.842 46.8597 123.394 45.5875 122.298 43.9433C121.202 42.2991 120.653 40.3418 120.653 38.0713V25.5639C120.653 24.3895 120.556 23.5283 120.36 22.9803C120.164 22.4322 119.792 22.0603 119.244 21.8646C118.696 21.6297 117.835 21.5123 116.661 21.5123C116.543 21.5123 116.484 21.3948 116.484 21.1599C116.484 20.9251 116.543 20.8076 116.661 20.8076L119.42 20.8663C120.908 20.9446 122.121 20.9838 123.061 20.9838C124.079 20.9838 125.371 20.9446 126.937 20.8663L129.579 20.8076C129.696 20.8076 129.755 20.9251 129.755 21.1599C129.755 21.3948 129.696 21.5123 129.579 21.5123C128.444 21.5123 127.582 21.6297 126.995 21.8646C126.447 22.0995 126.075 22.5105 125.88 23.0977C125.684 23.6458 125.586 24.507 125.586 25.6814V36.5446C125.586 40.0678 126.388 42.671 127.993 44.3543C129.599 45.9985 131.693 46.8206 134.277 46.8206C136.821 46.8206 138.818 46.0376 140.266 44.4718C141.754 42.8668 142.497 40.5767 142.497 37.6015V27.2668Z" /><path d="M96.4593 43.2977C96.4593 44.3155 96.5572 45.0788 96.7529 45.5877C96.9487 46.0575 97.301 46.3707 97.8099 46.5273C98.3188 46.6839 99.1409 46.7621 100.276 46.7621H103.799C106.579 46.7621 108.928 45.9988 110.846 44.4721C112.764 42.9062 114.036 40.8119 114.663 38.189C114.663 38.1107 114.741 38.0716 114.897 38.0716C114.976 38.0716 115.054 38.1107 115.132 38.189C115.25 38.2282 115.308 38.2673 115.308 38.3065C114.956 41.908 114.78 44.9418 114.78 47.4081C114.78 47.7212 114.721 47.9561 114.604 48.1127C114.486 48.2301 114.252 48.2889 113.899 48.2889H86.4182C86.3399 48.2889 86.3008 48.1714 86.3008 47.9365C86.3008 47.7017 86.3399 47.5842 86.4182 47.5842C87.7492 47.5842 88.7083 47.4864 89.2955 47.2906C89.9218 47.0949 90.3329 46.723 90.5286 46.1749C90.7635 45.5877 90.8809 44.7069 90.8809 43.5325V16.3452C90.8809 15.1708 90.7635 14.3096 90.5286 13.7615C90.3329 13.2135 89.9218 12.8416 89.2955 12.6458C88.6692 12.4109 87.7101 12.2935 86.4182 12.2935C86.3399 12.2935 86.3008 12.1761 86.3008 11.9412C86.3008 11.7063 86.3399 11.5889 86.4182 11.5889L89.4129 11.6476C91.1354 11.7259 92.5447 11.765 93.6408 11.765C94.8152 11.765 96.2636 11.7259 97.9861 11.6476L100.922 11.5889C101.04 11.5889 101.098 11.7063 101.098 11.9412C101.098 12.1761 101.04 12.2935 100.922 12.2935C99.6302 12.2935 98.6711 12.4109 98.0448 12.6458C97.4184 12.8416 96.9878 13.233 96.7529 13.8202C96.5572 14.3683 96.4593 15.2295 96.4593 16.4039V43.2977Z" /><path d="M29.5359 0L25.4609 29.5663H33.6294L29.5359 0Z" /><path d="M-1.78121e-07 29.553L29.5663 33.6279L29.5663 25.4595L-1.78121e-07 29.553Z" /><path d="M29.5359 59.0879L25.4609 29.5216H33.6294L29.5359 59.0879Z" /><path d="M59.0898 29.553L29.5236 33.6279L29.5236 25.4595L59.0898 29.553Z" /><path d="M15.3594 15.3594L27.6018 31.5159L31.5248 27.5929L15.3594 15.3594Z" /><path d="M15.3672 43.7373L31.5237 31.4949L27.6007 27.5719L15.3672 43.7373Z" /><path d="M43.7344 43.7373L27.5779 31.4949L31.5009 27.5719L43.7344 43.7373Z" /><path d="M43.7422 15.3594L31.4998 31.5159L27.5768 27.5929L43.7422 15.3594Z" /></svg></a>
 </div>
 <div id="dbg" hidden></div>
 <div id="err" hidden></div>
+<script src="fireworks.js"></script>
+<script src="drones.js"></script>
+<script src="audio.js"></script>
+<script src="experience.js"></script>
 <script>
 "use strict";
 const $err = document.getElementById('err');
@@ -56,8 +70,10 @@ function fail(msg){ $err.hidden=false; $err.textContent += (typeof msg==='string
 window.addEventListener('error', e => fail(e.message + (e.filename? `\n  @ ${e.filename.split('/').pop()}:${e.lineno}`:'')));
 
 const Q = new URLSearchParams(location.search);
+const MOBILE = matchMedia("(pointer: coarse)").matches;
 const FIXED_T = Q.has('t') ? parseFloat(Q.get('t')) : null;
 const DEBUG = Q.has('debug');
+let nightTarget = Q.get('day') !== '1' ? 1 : 0, nightMix = nightTarget;
 
 const canvas = document.getElementById('c');
 const gl = canvas.getContext('webgl2', { antialias:false, alpha:false, depth:false, stencil:false, powerPreference:'high-performance', preserveDrawingBuffer: FIXED_T!==null });
@@ -281,7 +297,7 @@ function stepRipples(shiftUV){
 }
 
 /* ---------------- Caustics ---------------- */
-const G = 256, C = 1024;
+const G = MOBILE ? 128 : 256, C = MOBILE ? 512 : 1024;
 const causRT = rt(C,C,gl.RGBA16F,{wrap:gl.REPEAT, mip:true, aniso:8});
 const gridVAO = gl.createVertexArray(); gl.bindVertexArray(gridVAO);
 {
@@ -349,7 +365,13 @@ let pebReady = false;
 
 /* ---------------- Main water shader ---------------- */
 const pMain = prog(VS, HEAD+`
-uniform sampler2D uSurf, uCaus, uPeb, uRip;
+uniform sampler2D uSurf, uCaus, uPeb, uRip, uFireworks, uDial;
+uniform float uNight;
+uniform vec2 uGearXZ;
+uniform vec2 uDroneXZ;
+uniform vec2 uDialXZ;
+uniform float uDialRadius;
+uniform float uDialStretch;
 uniform vec3 uCam, uR, uU, uF, uSun;
 uniform float uTanF, uAspect, uL, uDepth, uTime, uRipSize;
 uniform vec2 uCausShift, uRipCenter;
@@ -358,7 +380,7 @@ const float IOR = 1.3335;
 const vec3 SIG_A = vec3(0.40, 0.074, 0.088);
 const vec3 SIG_S = vec3(0.028, 0.052, 0.068);
 const vec3 SIG_T = SIG_A + SIG_S;
-const vec3 SUN = vec3(1.0, 0.90, 0.74) * 6.0;
+#define SUN (mix(vec3(1.0,0.90,0.74)*6.0,vec3(0.12,0.17,0.25),uNight))
 const float PI = 3.14159265359;
 
 float hash12(vec2 p){ vec3 p3 = fract(vec3(p.xyx)*.1031); p3 += dot(p3, p3.yzx+33.33); return fract((p3.x+p3.y)*p3.z); }
@@ -375,6 +397,15 @@ vec3 sky(vec3 d){
   vec3 zen = vec3(0.11, 0.27, 0.62), hor = vec3(0.66, 0.78, 0.90);
   vec3 c = mix(hor, zen, pow(clamp(e,0.,1.), 0.42));
   c += vec3(1.0, 0.86, 0.66) * (0.22*pow(max(mu,0.),6.) + 0.30*pow(max(mu,0.),64.) + 1.6*pow(max(mu,0.),2400.));
+  vec3 nightSky = mix(vec3(.011,.023,.043),vec3(.0015,.003,.012),pow(max(e,0.),.5));
+  vec2 starUV = vec2(atan(d.x,-d.z),asin(clamp(d.y,-1.,1.)))*470.;
+  vec2 cell=floor(starUV), sf=fract(starUV)-.5;
+  float star=pow(max(0.,1.-length(sf)*2.8),5.)*step(.997,hash12(cell))*smoothstep(.04,.22,e);
+  nightSky += vec3(.45,.55,.8)*star;
+  float moon=smoothstep(.99988,.99993,mu);
+  float crater=.88+.12*vnoise(d.xz*900.);
+  nightSky += vec3(.72,.84,1.)*(moon*crater*2.8+.028*pow(max(mu,0.),450.));
+  c=mix(c,nightSky,uNight);
   // distant headland: pine canopy over pale limestone, softened by ~2 km of air
   float a = atan(d.z, d.x);
   float r = ridge(a) + 0.0045*(vnoise(vec2(a*260.0, 0.0))-0.5) + 0.002*(vnoise(vec2(a*900.0, 3.0))-0.5);
@@ -388,6 +419,7 @@ vec3 sky(vec3 d){
   vec3 land = mix(pine, rock, cliff);
   land *= mix(1.0, 0.45, back);                         // backlit toward the sun
   land = mix(land, hor*0.92, 0.38 + 0.25*back);          // aerial perspective
+  land=mix(land,vec3(.0018,.004,.006),uNight);
   float w = fwidth(e)*1.2 + 2e-4;
   c = mix(c, land, smoothstep(r+w, r-w, e) * step(-0.3, e));
   return c;
@@ -468,6 +500,12 @@ void main(){
   // ---- reflection ----
   vec3 rr = reflect(wd, n); rr.y = abs(rr.y);
   vec3 refl = sky(rr) * 1.25;
+  // Distant radiance atlas: the same world particles, reflected through wave normals.
+  vec2 fireUV=vec2(atan(rr.x,-rr.z)/6.2831853+.5,asin(clamp(rr.y,-1.,1.))/3.14159265+.5);
+  vec3 fire=texture(uFireworks,fireUV).rgb*.6;
+  fire+=texture(uFireworks,fireUV+vec2(.0006,.0006)).rgb*.2;
+  fire+=texture(uFireworks,fireUV-vec2(.0006,.0006)).rgb*.2;
+  refl+=fire*1.8;
 
   // sun glints: GGX with slope-variance widening (LEAN-style)
   float a2 = 0.00012 + 1.2*var;
@@ -517,7 +555,7 @@ void main(){
   caus *= clamp(1.0/(1.0 + 0.12*depthHere*lap), 0.45, 3.0);
   float ao = mix(0.55, 1.0, smoothstep(0.08, 0.42, hgt));
   vec3 Esun = SUN * Ts * exp(-SIG_T*depthHere/(-sunT.y)) * caus * (-sunT.y) * mix(0.75, 1.0, ao);
-  vec3 skyIrr = vec3(0.62, 0.70, 0.78) * PI * 0.22;
+  vec3 skyIrr = mix(vec3(0.62, 0.70, 0.78) * PI * 0.22,vec3(.006,.012,.023),uNight);
   vec3 Esky = skyIrr * exp(-(SIG_A + 0.4*SIG_S)*depthHere*1.25) * ao;
   vec3 Lfloor = alb/PI * (Esun + Esky);
 
@@ -541,18 +579,44 @@ void main(){
     under += dot_ * fade * SUN * Ts * 0.022 * mix(vec3(0.9,1.0,0.95), vec3(0.4,0.35,0.3), step(0.992, r));
   }
 
+  // A small brass gear lying just below the surface. Refraction moves its outline.
+  float gearT=(-.25-P.y)/tr.y;
+  vec2 gearP=(P+tr*gearT).xz-uGearXZ;
+  float ga=atan(gearP.y,gearP.x), gr=length(gearP);
+  float edge=.18+.025*smoothstep(-.3,.3,cos(ga*10.));
+  float gw=max(fwidth(gr),.003);
+  float gear=(1.-smoothstep(edge-gw,edge+gw,gr))*smoothstep(.075-gw,.075+gw,gr)*step(0.,gearT);
+  under=mix(under, mix(vec3(.26,.22,.10),vec3(.08,.15,.14),uNight)*( .8+.2*cos(ga-1.)),gear*.85);
+  // An engraved quadcopter: four rotor rings connected to a central body.
+  vec2 droneP=((P+tr*gearT).xz-uDroneXZ)*vec2(1.,.46);
+  float rotor=abs(length(abs(droneP)-vec2(.14,.11))-.054);
+  float arm=abs(abs(droneP.x)*.11-abs(droneP.y)*.14)/.178;
+  float dw=max(fwidth(droneP.x)+fwidth(droneP.y),.003);
+  float droneMark=1.-smoothstep(.012,.012+dw,rotor);
+  droneMark=max(droneMark,(1.-smoothstep(.011,.011+dw,arm))*(1.-smoothstep(.15,.18,length(droneP))));
+  droneMark=max(droneMark,1.-smoothstep(.04,.04+dw,max(abs(droneP.x),abs(droneP.y))));
+  under=mix(under,mix(vec3(.20,.28,.24),vec3(.09,.18,.21),uNight),droneMark*.9*step(0.,gearT));
+  // The selector is an etched disc below the surface, refracted like the gear.
+  vec2 dialP=(P+tr*gearT).xz-uDialXZ;
+  vec2 dialUV=vec2(dialP.x,-dialP.y/uDialStretch)/(2.*uDialRadius)+.5;
+  if(gearT>0. && all(greaterThanEqual(dialUV,vec2(0))) && all(lessThanEqual(dialUV,vec2(1)))) {
+    vec4 dial=texture(uDial,dialUV);
+    vec3 material=pow(dial.rgb,vec3(2.2))*mix(.7,.65,uNight);
+    under=mix(under,material,dial.a*.92);
+  }
   vec3 col = F*refl + (1.0-F)*under + spec;
 
   // distant haze over the water
   float haze = 1.0 - exp(-dist*0.004);
   float muh = max(dot(normalize(vec3(wd.x,0.0,wd.z)), uSun), 0.0);
   vec3 hazeC = vec3(0.60, 0.71, 0.82) + vec3(1.0,0.86,0.66)*(0.22*pow(muh,6.0)+0.3*pow(muh,64.0));
-  col = mix(col, hazeC*0.95, haze*0.8);
+  hazeC=mix(hazeC,vec3(.008,.017,.029),uNight);
+  col = mix(col, hazeC*0.95, haze*mix(.8,.35,uNight));
 
   // sky above horizon
   vec3 skyc = sky(rd);
   float mu = dot(rd, uSun);
-  skyc += SUN*18.0*smoothstep(0.99996, 0.999985, mu);
+  skyc += SUN*18.0*smoothstep(0.99988, 0.99993, mu)*(1.-uNight);
   float hz = smoothstep(-0.0005, 0.0015, rd.y);
   col = mix(col, skyc, hz);
 
@@ -591,7 +655,7 @@ void main(){
 const pCopy = prog(VS, HEAD+`uniform sampler2D uSrc; uniform float uK; void main(){ o = vec4(texture(uSrc,vUv).rgb*uK,1); }`, 'copy');
 const pRaw = prog(VS, HEAD+`uniform sampler2D uSrc; void main(){ o = texelFetch(uSrc, ivec2(gl_FragCoord.xy), 0); }`, 'raw');
 const pFinal = prog(VS, HEAD+`
-uniform sampler2D uHdr, uStreak, uB1, uB2; uniform float uExp, uTime, uNoPost; uniform vec2 uRes;
+uniform sampler2D uHdr, uStreak, uB1, uB2; uniform float uExp, uTime, uNoPost, uBloom; uniform vec2 uRes;
 vec3 bicubic(sampler2D t, vec2 uv){
   vec2 ts = vec2(textureSize(t,0)); vec2 p = uv*ts - 0.5; vec2 f = fract(p); p = floor(p);
   vec2 w0 = f*(-0.5+f*(1.0-0.5*f)), w1 = 1.0+f*f*(-2.5+1.5*f), w2 = f*(0.5+f*(2.0-1.5*f)), w3 = f*f*(-0.5+0.5*f);
@@ -607,7 +671,7 @@ void main(){
   vec3 c;
   c.r = texture(uHdr, uv + cc*ca).r; c.g = texture(uHdr, uv).g; c.b = texture(uHdr, uv - cc*ca).b;
   if (uNoPost < 0.5) c += texture(uStreak, uv).rgb * 0.9;
-  if (uNoPost < 0.5) c += texture(uB1, uv).rgb * 0.035 + bicubic(uB2, uv) * 0.035;
+  if (uNoPost < 0.5) c += texture(uB1, uv).rgb * uBloom + bicubic(uB2, uv) * uBloom;
   if (uNoPost > 1.5) c = texture(uStreak, uv).rgb * 0.55 * 20.0;
   c *= uExp;
   float vig = 1.0 - 0.22*dot(cc*vec2(1.0,0.8), cc*vec2(1.0,0.8))*2.2;
@@ -627,7 +691,7 @@ void main(){
    The star around each sun glint is the lens aperture's diffraction pattern (its Fourier transform),
    integrated over wavelengths so the spikes carry faint rainbow tints. The bright image is convolved
    with it by FFT every frame, so the cost does not depend on how many glints there are. */
-const GLARE_ON = !!extF32 && !Q.has('noglare');
+const GLARE_ON = !!extF32 && !MOBILE && !Q.has('noglare');
 const pFFTg = prog(VS, HEAD+`
 uniform sampler2D uSrc; uniform int uP, uHoriz, uHalf; uniform float uSign;
 vec2 cmul(vec2 a, vec2 b){ return vec2(a.x*b.x-a.y*b.y, a.x*b.y+a.y*b.x); }
@@ -774,10 +838,12 @@ function renderGlare(){
   gl.useProgram(pGOut.p); bindT(0,res[0].t); bindT(1,res[1].t); gl.uniform1i(pGOut.u.uA,0); gl.uniform1i(pGOut.u.uB,1); fullscreen();
 }
 let W=0, H=0, scale = 1.0, hdrRT, qA, qS, qB, qC, streakRT, b1, b2, b2t;
-const DPR = Math.min(window.devicePixelRatio||1, 2);
+const DPR = Math.min(window.devicePixelRatio||1, MOBILE ? 1.75 : 2);
 let quality = FIXED_T!==null ? 1.0 : (DPR > 1.5 ? 0.72 : 0.95);
 function alloc(){
-  const cw = Math.max(1, Math.round(innerWidth*DPR*quality)), ch = Math.max(1, Math.round(innerHeight*DPR*quality));
+  // Bound floating-point render targets on high-DPI phones, in either orientation.
+  const density = Math.min(DPR*quality, Math.sqrt((MOBILE ? 1100000 : 4000000)/(innerWidth*innerHeight)));
+  const cw = Math.max(1, Math.round(innerWidth*density)), ch = Math.max(1, Math.round(innerHeight*density));
   if (cw===W && ch===H) return;
   W=cw; H=ch; canvas.width=W; canvas.height=H;
   for (const r of [hdrRT,qA,qS,qB,qC,streakRT,b1,b2,b2t]) if (r){ gl.deleteTexture(r.t); gl.deleteFramebuffer(r.fb); }
@@ -788,7 +854,8 @@ function alloc(){
   b1 = rt(qw,qh,gl.RGBA16F);
   b2 = rt(Math.max(1,qw>>2),Math.max(1,qh>>2),gl.RGBA16F,{}); b2t = rt(b2.w,b2.h,gl.RGBA16F);
 }
-window.addEventListener('resize', alloc);
+let resizeFrame;
+window.addEventListener('resize', ()=>{cancelAnimationFrame(resizeFrame);resizeFrame=requestAnimationFrame(alloc);});
 
 function post(t){
   gl.disable(gl.BLEND);
@@ -796,7 +863,8 @@ function post(t){
   target(qA); gl.uniform1f(pBright.u.uThr, 2.5); fullscreen();
   // the glare is the heaviest post step: on phones refresh it every other frame (every third when struggling)
   const every = FIXED_T!==null ? 1 : (quality < 0.55 ? 3 : (DPR > 1.5 ? 2 : 1));
-  if (GLARE_ON && (glareTick++ % every === 0)) renderGlare();
+  if (GLARE_ON && nightMix<.05 && !experience.reduced) { if(glareTick++ % every === 0) renderGlare(); }
+  else { target(streakRT); gl.clearColor(0,0,0,0); gl.clear(gl.COLOR_BUFFER_BIT); }
   // bloom
   gl.useProgram(pBlur.p); gl.uniform1i(pBlur.u.uSrc,0);
   target(qB); bindT(0,qA.t); gl.uniform2f(pBlur.u.uDir,1,0); fullscreen();
@@ -809,36 +877,46 @@ function post(t){
   target(null); gl.useProgram(pFinal.p);
   bindT(0,hdrRT.t); bindT(1,streakRT.t); bindT(2,b1.t); bindT(3,b2.t);
   gl.uniform1i(pFinal.u.uHdr,0); gl.uniform1i(pFinal.u.uStreak,1); gl.uniform1i(pFinal.u.uB1,2); gl.uniform1i(pFinal.u.uB2,3);
-  gl.uniform1f(pFinal.u.uExp, 0.63); gl.uniform1f(pFinal.u.uNoPost, Q.get('view')==='nopost'?1:(Q.get('view')==='glare'?2:0)); gl.uniform1f(pFinal.u.uTime, t); gl.uniform2f(pFinal.u.uRes, W, H);
+  gl.uniform1f(pFinal.u.uBloom,experience.reduced?.035:.035+nightMix*.11);
+  gl.uniform1f(pFinal.u.uExp, 0.63 + nightMix*.15); gl.uniform1f(pFinal.u.uNoPost, Q.get('view')==='nopost'?1:(Q.get('view')==='glare'?2:0)); gl.uniform1f(pFinal.u.uTime, t); gl.uniform2f(pFinal.u.uRes, W, H);
   fullscreen();
 }
 
 /* ---------------- Camera & input ---------------- */
 const SUN_EL = 31*Math.PI/180, SUN_AZ = 6*Math.PI/180;
 const SUNV = [Math.sin(SUN_AZ)*Math.cos(SUN_EL), Math.sin(SUN_EL), -Math.cos(SUN_AZ)*Math.cos(SUN_EL)];
-const cam = { yaw: Q.has('yaw')? parseFloat(Q.get('yaw')) : 0, pitch: Q.has('pitch')? parseFloat(Q.get('pitch')) : -0.72, vy:0, vp:0, h:1.55 };
+const cam = { yaw: Q.has('yaw')? parseFloat(Q.get('yaw')) : 0, pitch: Q.has('pitch')? parseFloat(Q.get('pitch')) : 0.10, vy:0, vp:0, h:1.55 };
 let drag = null, lastTap = null;
-canvas.addEventListener('pointerdown', e => { canvas.setPointerCapture(e.pointerId); drag = {x:e.clientX, y:e.clientY, x0:e.clientX, y0:e.clientY, t:performance.now()}; });
+canvas.addEventListener('pointerdown', e => {
+  if(drag || !e.isPrimary || e.button!==0)return;
+  canvas.setPointerCapture(e.pointerId);
+  drag = {id:e.pointerId,x:e.clientX,y:e.clientY,x0:e.clientX,y0:e.clientY,t:performance.now(),moved:false};
+  cam.vy=cam.vp=0;experience.beginCharge(e.clientX,e.clientY);
+});
 canvas.addEventListener('pointermove', e => {
-  if (!drag) return;
+  if (!drag || e.pointerId!==drag.id) return;
+  if(!drag.moved && Math.hypot(e.clientX-drag.x0,e.clientY-drag.y0)<8)return;
+  drag.moved=true;experience.cancelCharge();
   const k = 1.2/Math.min(innerWidth, innerHeight);
   const dx = (e.clientX-drag.x)*k, dy = (e.clientY-drag.y)*k;
   cam.yaw -= dx; cam.pitch += dy; cam.vy = -dx; cam.vp = dy;
-  cam.pitch = Math.max(-1.45, Math.min(0.35, cam.pitch));
+  cam.pitch = Math.max(-1.45, Math.min(1.15, cam.pitch));
   drag.x = e.clientX; drag.y = e.clientY;
 });
 canvas.addEventListener('pointerup', e => {
-  if (drag && Math.hypot(e.clientX-drag.x0, e.clientY-drag.y0) < 8 && performance.now()-drag.t < 350) lastTap = [e.clientX, e.clientY];
-  drag = null; hideHint();
+  if(!drag || e.pointerId!==drag.id)return;
+  if(!drag.moved)lastTap=[e.clientX,e.clientY,(performance.now()-drag.t)/1000];
+  drag = null;experience.cancelCharge();hideHint();
 });
-canvas.addEventListener('pointercancel', () => drag = null);
+canvas.addEventListener('pointercancel', () => {drag=null;experience.cancelCharge();});
+canvas.addEventListener('lostpointercapture', () => {drag=null;experience.cancelCharge();});
 const $hint = document.getElementById('hint');
 let hintT = setTimeout(hideHint, 6000);
 function hideHint(){ clearTimeout(hintT); $hint.classList.add('off'); }
 if (FIXED_T!==null) $hint.style.display='none';
 
 function camBasis(t){
-  const hy = FIXED_T!==null ? 0 : 1;
+  const hy = FIXED_T!==null || experience.reduced ? 0 : 0.35;
   const yaw = cam.yaw + hy*(0.010*Math.sin(t*0.31) + 0.005*Math.sin(t*0.83+1.3));
   const pit = cam.pitch + hy*(0.007*Math.sin(t*0.47+2.0) + 0.003*Math.sin(t*1.13));
   const roll = hy*(0.006*Math.sin(t*0.39+0.4));
@@ -865,17 +943,37 @@ function tapToDrop(sx, sy, B){
   ripActive = 0;
 }
 
+/* ---------------- Fireworks & diegetic controls ---------------- */
+const fireworks = new FireworkRenderer(gl,{prog,rt,target,mobile:MOBILE});
+const drones = new DroneShow();
+const dialTexture=tex(1024,1024,gl.RGBA8);
+const experience = new BeachExperience({canvas, sun:SUNV, tanF:Math.tan(VFOV/2), frozen:FIXED_T!==null,
+  isNight:()=>nightTarget===1, toggleNight:()=>{nightTarget=1-nightTarget;},
+  time:()=>tSim, clear:()=>{fireworks.world.shells=[];drones.drones=[];},cancelInput:()=>{drag=null;lastTap=null;},
+  uploadDial:source=>{gl.bindTexture(gl.TEXTURE_2D,dialTexture);gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,true);gl.texSubImage2D(gl.TEXTURE_2D,0,0,0,gl.RGBA,gl.UNSIGNED_BYTE,source);gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,false);},
+  launch:(type,position,size,seed,at)=>fireworks.world.launch(type,position,at??tSim,seed,size),
+  droneShow:drones,
+  frameDrones:()=>{cam.pitch=.10;cam.vp=cam.vy=0;}
+});
+if(Q.has('demo')) fireworks.world.launch('Willow',[0,110,-300],0,81);
 /* ---------------- Loop ---------------- */
 alloc();
 const $dbg = document.getElementById('dbg'); if (DEBUG) $dbg.hidden = false;
 let t0 = performance.now(), last = t0, acc = 0, frames = 0, ftAvg = 16, tSim = 0;
 function frame(now){
+  if(document.hidden){last=now;window.__lastShowFrame=now;requestAnimationFrame(frame);return;}
   const dt = Math.min(0.05, (now-last)/1000); last = now;
-  tSim += dt;
+  if(!document.hidden) tSim += Math.max(0,(now-(window.__lastShowFrame || now))/1000);
+  window.__lastShowFrame=now;
+  nightMix += (nightTarget-nightMix)*(1-Math.exp(-dt*2.2));
   const t = FIXED_T!==null ? FIXED_T : tSim;
-  if (!drag){ cam.yaw += cam.vy*0.9; cam.pitch += cam.vp*0.9; cam.vy*=0.9; cam.vp*=0.9; cam.pitch = Math.max(-1.45, Math.min(0.35, cam.pitch)); }
+  if (!drag){ cam.yaw += cam.vy*0.9; cam.pitch += cam.vp*0.9; cam.vy*=0.9; cam.vp*=0.9; cam.pitch = Math.max(-1.45, Math.min(1.15, cam.pitch)); }
   if (!pebReady){ requestAnimationFrame(frame); return; }
   const B = camBasis(t);
+  experience.update(B);
+  fireworks.gentle=experience.reduced;
+  fireworks.update(t,drones);
+  fireworks.reflect(B);
 
   runFFT(t*0.9);
   // keep the ripple window centred under the view, snapped to whole texels
@@ -884,22 +982,28 @@ function frame(now){
   const tx = RSIZE/RN;
   const dxT = Math.round((want[0]-ripCenter[0])/tx), dzT = Math.round((want[1]-ripCenter[1])/tx);
   if (Q.has('tap') && !window.__tapped){ window.__tapped=1; const [x,y]=Q.get('tap').split(',').map(Number); lastTap=[x,y]; }
-  if (lastTap){ tapToDrop(lastTap[0], lastTap[1], B); lastTap = null; }
+  if (lastTap){ if(!experience.launchAt(lastTap[0],lastTap[1],lastTap[2]||0)) tapToDrop(lastTap[0],lastTap[1], B); lastTap = null; }
   if (drag){ /* stir while dragging lightly? keep camera only */ }
   if (ripActive < 900){
     stepRipples([dxT/RN, dzT/RN]); ripCenter = [ripCenter[0]+dxT*tx, ripCenter[1]+dzT*tx]; ripActive++;
   } else { ripCenter = [ripCenter[0]+dxT*tx, ripCenter[1]+dzT*tx]; }
 
-  renderCaustics(SUNV);
+  if(nightMix < .995) renderCaustics(SUNV);
 
   target(hdrRT); gl.disable(gl.BLEND); gl.useProgram(pMain.p);
-  bindT(0,surfRT.t); bindT(1,causRT.t); bindT(2,pebTex); bindT(3,ripN.t);
+  bindT(0,surfRT.t); bindT(1,causRT.t); bindT(2,pebTex); bindT(3,ripN.t); bindT(4,fireworks.atlas.t);
+  bindT(5,dialTexture);
   const u = pMain.u;
+  gl.uniform1i(u.uFireworks,4); gl.uniform1f(u.uNight,nightMix);
+  gl.uniform2fv(u.uGearXZ,experience.gearPosition);
+  gl.uniform2fv(u.uDroneXZ,experience.dronePosition);
+  gl.uniform1i(u.uDial,5);gl.uniform2fv(u.uDialXZ,experience.dialPosition);gl.uniform1f(u.uDialRadius,experience.dialRadius);gl.uniform1f(u.uDialStretch,experience.dialStretch);
   gl.uniform1i(u.uSurf,0); gl.uniform1i(u.uCaus,1); gl.uniform1i(u.uPeb,2); gl.uniform1i(u.uRip,3);
   gl.uniform3fv(u.uCam, B.pos); gl.uniform3fv(u.uR, B.r); gl.uniform3fv(u.uU, B.u); gl.uniform3fv(u.uF, B.f); gl.uniform3fv(u.uSun, SUNV);
   gl.uniform1f(u.uTanF, Math.tan(VFOV/2)); gl.uniform1f(u.uAspect, W/H); gl.uniform1f(u.uL, L); gl.uniform1f(u.uDepth, DEPTH); gl.uniform1f(u.uTime, t);
   gl.uniform1f(u.uRipSize, RSIZE); gl.uniform2fv(u.uRipCenter, ripCenter); gl.uniform2fv(u.uCausShift, causShift);
   fullscreen();
+  fireworks.draw(B,W/H,Math.tan(VFOV/2),H);
   post(t);
 
   // adaptive resolution
@@ -914,6 +1018,7 @@ function frame(now){
   if (FIXED_T!==null){ window.__frames = (window.__frames||0)+1; if (window.__frames < (Q.has('frames')? +Q.get('frames') : 4)) requestAnimationFrame(frame); return; }
   requestAnimationFrame(frame);
 }
+document.addEventListener('visibilitychange',()=>{last=performance.now();window.__lastShowFrame=last;});
 requestAnimationFrame(frame);
 </script>
 <!-- Pebble bed texture: procedurally generated, seamless 1024x1024 JPEG (tools/make_pebbles.py), base64 -->
