@@ -118,7 +118,11 @@ class DroneShow {
     const previous=this.active(time)?this.drones.map(drone=>this.pose(drone,time)):[];
     this.custom=formation;this.text=formation?.text||'';this.settings={pace:'normal',palette:'prism',loop:true,...settings};
     this.stageDuration=DRONE_PACES[this.settings.pace]||16;this.transition=this.stageDuration*.3;
-    this.patterns=[...DRONE_PATTERNS.map(p=>p.id),...(this.custom?['message']:[])];this.startIndex=Math.max(0,Math.min(this.patterns.length-1,startIndex));
+    const first=Math.max(0,Math.min(DRONE_PATTERNS.length-1,startIndex));
+    const shapes=DRONE_PATTERNS.map((_,i)=>DRONE_PATTERNS[(first+i)%DRONE_PATTERNS.length].id);
+    // Message, two shapes, message: repeat across the cycle boundary as well.
+    this.patterns=this.custom?shapes.flatMap((id,i)=>i%2===0?['message',id]:[id]):shapes;
+    this.startIndex=0;
     this.configure(basis,aspect,tanF);this.start=time;this.landAt=this.settings.loop?Infinity:time+this.patterns.length*this.stageDuration;
     const count=Math.max(960,this.custom?.points.length||0),drones=[];
     for(let i=0;i<count;i++) {
@@ -130,12 +134,12 @@ class DroneShow {
     for(let i=count;i<previous.length;i++)drones.push({index:i,home:this.drones[i].home,origin:previous[i].position,originColor:previous[i].color,phase:0,retiring:true,reused:true});
     this.count=count;this.drones=drones;this.spacing=1.2;
   }
-  form(formation,time,basis,aspect,tanF,settings=this.settings) {this.startShow(time,basis,aspect,tanF,settings,formation,8);}
+  form(formation,time,basis,aspect,tanF,settings=this.settings) {this.startShow(time,basis,aspect,tanF,settings,formation,0);}
   phase(time) {
     const elapsed=Math.max(0,time-this.start),stage=Math.floor(elapsed/this.stageDuration),index=(this.startIndex+stage)%this.patterns.length;
     return {stage,index,local:elapsed-stage*this.stageDuration,id:this.patterns[index]};
   }
-  status(time) {if(!this.active(time))return 'Ready for takeoff';if(time>=this.landAt)return 'Landing the fleet';const p=this.phase(time);return `${p.index+1} / ${this.patterns.length} · ${p.id==='message'?'Your message':DRONE_PATTERNS[p.index].name}`;}
+  status(time) {if(!this.active(time))return 'Ready for takeoff';if(time>=this.landAt)return 'Landing the fleet';const p=this.phase(time);return `${p.index+1} / ${this.patterns.length} · ${p.id==='message'?'Your message':DRONE_PATTERNS.find(pattern=>pattern.id===p.id).name}`;}
   target(id,index,age) {
     if(id==='message') {
       if(index>=this.custom.points.length)return {position:this.drones[index].home,color:[0,0,0]};

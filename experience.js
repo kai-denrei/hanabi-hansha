@@ -11,47 +11,53 @@ class BeachExperience {
       <div id="radial" role="group" aria-label="Underwater firework dial" hidden><button id="auto-dial" aria-label="Start auto show" title="Start auto show"></button></div>
       <div id="reticle" hidden><span></span></div>
       <section id="settings" role="dialog" aria-modal="false" aria-labelledby="settings-title" hidden>
-        <button class="close" aria-label="Close settings">×</button><h2 id="settings-title">Beneath the surface</h2>
-        <p>Choose a bloom beneath the water.<br>Tap the sky for a small shell; hold for a larger one.<br>Hold Space to launch ahead · drag to look around.</p>
-        <label>Sound <input id="sound-toggle" type="checkbox" checked></label>
-        <label>Volume <input id="volume" type="range" min="0" max="100" value="65" aria-label="Sound volume"></label>
-        <label>Gentler effects <input id="gentle-toggle" type="checkbox"></label>
-        <hr><label for="show-preset">An evening's display</label>
-        <select id="show-preset"><option value="gold">Golden tide · 60 seconds</option><option value="festival">Summer festival · 90 seconds</option><option value="quiet">Quiet embers · 45 seconds</option></select>
-        <button id="auto-toggle">Start auto show</button><p id="show-status">Solos, a rising rhythm, then a grand finale.</p>
-        <hr><button id="install-app" hidden>Install Hanabi</button><p id="install-help" hidden aria-live="polite"></p><p>Original water project by Aurélien / Lumaris.<br>Fireworks by <strong>Kai Denrei</strong>.</p><div id="credit-slot"></div>
-        <a class="license" href="LICENSE" target="_blank" rel="noopener">Original water · MIT license</a>
+        <button class="close" aria-label="Close settings">×</button><h2 id="settings-title">Settings</h2>
+        <div class="settings-show">
+          <button id="auto-toggle" class="primary">Start auto show</button>
+          <select id="show-preset" aria-label="Fireworks show"><option value="gold">Golden tide · 60s</option><option value="festival">Summer festival · 90s</option><option value="quiet">Quiet embers · 45s</option></select>
+          <p id="show-status" class="sr-only" aria-live="polite"></p>
+        </div>
+        <div class="settings-options">
+          <label>Sound <input id="sound-toggle" type="checkbox" checked></label>
+          <label>Volume <input id="volume" type="range" min="0" max="100" value="65" aria-label="Sound volume"></label>
+          <label>Gentler effects <input id="gentle-toggle" type="checkbox"></label>
+        </div>
+        <footer class="settings-footer">
+          <button id="install-app" hidden>Install Hanabi</button><p id="install-help" hidden aria-live="polite"></p>
+          <p>Water · <a href="https://x.com/Aurelien_Gz" target="_blank" rel="noopener">Aurélien</a> / <a href="https://lumaris.works" target="_blank" rel="noopener">Lumaris</a><br>Fireworks · <strong>Kai Denrei</strong> · <a href="LICENSE" target="_blank" rel="noopener">MIT</a></p>
+        </footer>
       </section>
       <dialog id="drone-composer" aria-labelledby="drone-title">
         <form id="drone-form">
           <button class="close" type="button" aria-label="Close drone composer">×</button>
-          <div class="eyebrow">SYNCHRONIZED FLIGHT</div><h2 id="drone-title">A living sky</h2>
-          <p>Eight formations. One coordinated fleet.<br>Watch the shapes turn, breathe, and take flight.</p>
-          <div id="drone-patterns" aria-label="Start from a formation"></div>
-          <div class="drone-options">
-            <label>Colors<select id="drone-palette" aria-label="Colors"><option value="prism">Prism · full spectrum</option><option value="aurora">Aurora · green & violet</option><option value="ember">Ember · gold & coral</option></select></label>
-            <label>Pace<select id="drone-pace" aria-label="Pace"><option value="normal">Unhurried</option><option value="calm">Slow & floating</option><option value="brisk">Lively</option></select></label>
+          <div class="drone-message">
+            <h2 id="drone-title"><label for="drone-text">Add your own formation</label></h2>
+            <textarea id="drone-text" rows="2" placeholder="Your message · 夏の夜 ✨" spellcheck="false" dir="auto" aria-describedby="drone-help drone-error"></textarea>
+            <p id="drone-help">Your message first, then every third formation.</p>
+            <p id="drone-error" role="status" aria-live="polite"></p>
+            <button id="drone-start" class="primary" type="submit" autofocus>Start drone show</button>
           </div>
-          <label class="drone-loop"><input id="drone-loop" type="checkbox" checked> Repeat the show</label>
-          <button id="drone-start" type="button">Start drone show</button>
-          <p id="drone-sequence-status" aria-live="polite">8 formations · about two minutes per cycle</p>
-          <label for="drone-text">Add your own formation</label>
-          <textarea id="drone-text" rows="2" placeholder="夏の夜 ✨&#10;Hello, sky" spellcheck="false" dir="auto" aria-describedby="drone-help drone-error"></textarea>
-          <p id="drone-help">Japanese, emojis & line breaks · up to 240 characters<br>Ctrl/⌘ + Enter adds your message as formation nine.</p>
-          <canvas id="drone-preview" aria-label="Preview of your sky message" hidden></canvas>
-          <p id="drone-error" role="status" aria-live="polite"></p>
-          <div class="drone-actions"><button id="drone-land" type="button">Land drones</button><button id="drone-launch" type="submit" disabled>Add message to show</button></div>
+          <div class="drone-controls">
+            <div id="drone-patterns" aria-label="First preset formation"></div>
+            <div class="drone-options">
+              <label>Colors<select id="drone-palette"><option value="prism">Prism</option><option value="aurora">Aurora</option><option value="ember">Ember</option></select></label>
+              <label>Pace<select id="drone-pace"><option value="normal">Unhurried</option><option value="calm">Slow</option><option value="brisk">Lively</option></select></label>
+            </div>
+            <div class="drone-actions"><label class="drone-loop"><input id="drone-loop" type="checkbox" checked> Repeat</label><button id="drone-land" type="button">Land drones</button></div>
+            <p id="drone-sequence-status" class="sr-only" aria-live="polite"></p>
+          </div>
         </form>
       </dialog>`);
     this.sun=document.getElementById('celestial-hit');this.gear=document.getElementById('gear-hit');this.radial=document.getElementById('radial');this.settings=document.getElementById('settings');this.launcher=document.getElementById('launcher');this.reticle=document.getElementById('reticle');this.autoDial=document.getElementById('auto-dial');
-    document.getElementById('credit-slot').append(document.getElementById('credit'));
+    document.getElementById('credit').remove();
+    this.droneStartIndex=0;
     this.droneButton=document.getElementById('drone-hit');this.droneDialog=document.getElementById('drone-composer');this.droneText=document.getElementById('drone-text');
     DRONE_PATTERNS.forEach((pattern,index)=>{
       const button=document.createElement('button');button.type='button';button.setAttribute('aria-label',`Start with ${pattern.name}`);
       button.innerHTML=`<span aria-hidden="true">${pattern.icon}</span><small>${pattern.name}</small>`;
-      button.onclick=()=>this.startDroneSequence(index);document.getElementById('drone-patterns').append(button);
+      button.setAttribute('aria-pressed',String(index===0));
+      button.onclick=()=>{this.droneStartIndex=index;document.querySelectorAll('#drone-patterns button').forEach((b,i)=>b.setAttribute('aria-pressed',String(i===index)));};document.getElementById('drone-patterns').append(button);
     });
-    document.getElementById('drone-start').onclick=()=>this.startDroneSequence();
     this.droneButton.onclick=()=>this.openDroneComposer();
     this.droneDialog.querySelector('.close').onclick=()=>this.droneDialog.close();
     this.droneDialog.addEventListener('close',()=>{this.composing=false;this.droneButton.focus({preventScroll:true});});
@@ -103,19 +109,18 @@ class BeachExperience {
     this.droneDialog.showModal();document.getElementById('drone-start').focus();this.previewDrones();
   }
   droneSettings() {return {palette:document.getElementById('drone-palette').value,pace:document.getElementById('drone-pace').value,loop:document.getElementById('drone-loop').checked};}
-  startDroneSequence(index=0) {
+  startDroneSequence(index=this.droneStartIndex) {
     if(!this.basis||this.h.frozen)return;
-    this.h.droneShow.startShow(this.h.time(),this.basis,innerWidth/innerHeight,this.h.tanF,this.droneSettings(),this.h.droneShow.custom,index);
+    this.h.droneShow.startShow(this.h.time(),this.basis,innerWidth/innerHeight,this.h.tanF,this.droneSettings(),this.formation,index);
     this.h.frameDrones();if(!this.h.isNight())this.h.toggleNight();
     this.droneDialog.close();this.hint('A fleet of lights · watch the sky come alive');
   }
   previewDrones() {
-    const error=document.getElementById('drone-error'),preview=document.getElementById('drone-preview'),launch=document.getElementById('drone-launch');
-    try {
-      this.formation=buildDroneFormation(this.droneText.value,innerWidth/innerHeight);
-      preview.width=this.formation.width;preview.height=this.formation.height;
-      preview.getContext('2d').drawImage(this.formation.canvas,0,0);preview.hidden=false;error.textContent='';launch.disabled=false;
-    } catch(e) {this.formation=null;preview.hidden=true;launch.disabled=true;error.textContent=this.droneText.value?e.message:'';}
+    const error=document.getElementById('drone-error');
+    this.formation=null;error.textContent='';
+    if(!this.droneText.value.trim())return;
+    try {this.formation=buildDroneFormation(this.droneText.value,innerWidth/innerHeight);}
+    catch(e) {error.textContent=e.message;}
   }
   async launchDrones() {
     if(this.droneLaunching||this.h.frozen)return;
@@ -123,10 +128,8 @@ class BeachExperience {
     try {
       await document.fonts.ready;
       if(!this.droneDialog.open||this.composing||!this.basis)return;
-      this.previewDrones();if(!this.formation)return;
-      this.h.droneShow.form(this.formation,this.h.time(),this.basis,innerWidth/innerHeight,this.h.tanF,this.droneSettings());
-      this.h.frameDrones();if(!this.h.isNight())this.h.toggleNight();
-      this.droneDialog.close();this.hint('Your message joins the show · nine formations');
+      this.previewDrones();if(this.droneText.value.trim()&&!this.formation)return;
+      this.startDroneSequence();
     } finally {this.droneLaunching=false;}
   }
   hint(text) {const el=document.getElementById('hint');el.textContent=text;el.classList.remove('off');clearTimeout(this.hintTimer);this.hintTimer=setTimeout(()=>el.classList.add('off'),6000);}

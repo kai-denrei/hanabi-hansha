@@ -65,13 +65,37 @@ test('the default fleet cycles continuously without position or color jumps',()=
   assert.equal(show.active(1000),true);
 });
 
-test('a non-repeating show lands and a personal message becomes a ninth formation',()=>{
+test('a non-repeating show lands and a personal message leads the sequence',()=>{
   const show=new DroneShow(),basis={pos:[0,1.55,0],f:[0,0,-1]};
   show.startShow(0,basis,.46,.625,{loop:false,pace:'brisk',palette:'aurora'});
   assert.equal(show.landAt,8*12);assert.equal(show.active(103),false);
   const formation={text:'花',width:50,height:50,step:3,points:[{x:0,y:0,color:[1,0,0]}]};
   show.form(formation,110,basis,.46,.625,{loop:true});
-  assert.equal(show.patterns.length,9);assert.equal(show.phase(117).id,'message');
+  assert.equal(show.patterns.length,12);assert.equal(show.phase(117).id,'message');
   assert.equal(show.phase(110+16+7).id,'sphere');
   assert.deepEqual(show.target('message',0,1).color,[1,0,0]);
+});
+
+
+test('personal messages recur every third formation across loops while all eight shapes progress',()=>{
+  const show=new DroneShow(),basis={pos:[0,1.55,0],f:[0,0,-1]};
+  const formation={text:'夏 ✨',width:50,height:50,points:[{x:0,y:0,color:[1,0,0]}]};
+  show.startShow(0,basis,1.4,.625,{loop:true},formation,3);
+  const shapes=[];
+  for(let stage=0;stage<36;stage++){
+    const time=stage*show.stageDuration,phase=show.phase(time+1);
+    assert.equal(phase.id==='message',stage%3===0);
+    assert.ok(show.status(time+1).length>0);
+    if(phase.id!=='message')shapes.push(phase.id);
+    if(stage)for(const drone of show.drones.filter((_,i)=>i%71===0)){
+      const a=show.pose(drone,time-.001),b=show.pose(drone,time+.001);
+      assert.ok(Math.hypot(...a.position.map((v,k)=>v-b.position[k]))<.1);
+      assert.ok(Math.hypot(...a.color.map((v,k)=>v-b.color[k]))<.01);
+    }
+  }
+  const cycle=['helix','heart','saturn','flower','ufo','sphere','bird','cube'];
+  assert.deepEqual(shapes,[...cycle,...cycle,...cycle]);
+  show.startShow(0,basis,1.4,.625,{loop:false},formation);
+  assert.equal(show.landAt,12*16);
+  assert.equal(show.active(show.landAt+6),false);
 });
