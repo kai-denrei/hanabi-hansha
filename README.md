@@ -84,3 +84,10 @@ Serve the repository as a static site; no build is needed. The service worker us
 ## Publishing
 
 GitHub Pages serves the root of the `main` branch. Push to `main` to publish changes; `.nojekyll` keeps the app as plain static files. All app paths are relative so the manifest, service worker, and assets work under `/hanabi-hansha/`.
+
+
+## Share a show
+
+In the drone panel, write a message (Enter adds a line break) and choose **Copy link ⧉**. The resulting `?auto#message` URL starts a drone show and the Golden tide fireworks automatically. The message appears first, then after each pair of preset formations. Audio starts after the recipient interacts with the page; visuals do not wait for audio permission.
+
+Example: `https://kai-denrei.github.io/hanabi-hansha/?auto#ジェラ♡杏里`. For two lines use `?auto#ジェラ%0A♡杏里`. Copy link encodes Unicode, emojis, line breaks (`%0A`), and literal percent/hash characters automatically. Messages stay in the URL fragment and are interpreted as plain text. Shared links use the default show settings; they omit local camera/debug options. Without `?auto`, the fragment only pre-fills the drone message. If clipboard access is unavailable, the panel selects the link for manual copying.

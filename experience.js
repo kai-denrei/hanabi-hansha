@@ -1,3 +1,13 @@
+function hanabiShareURL(base,message) {
+  const url=new URL(base);url.search='?auto';
+  url.hash=encodeURIComponent(message.replace(/\r\n?/g,'\n').normalize('NFC').trim());
+  return url.href;
+}
+function hanabiSharedShow(href) {
+  const url=new URL(href);
+  try {return {autoplay:url.searchParams.has('auto'),message:decodeURIComponent(url.hash.slice(1)),error:''};}
+  catch {return {autoplay:false,message:'',error:'This message link is damaged. Please ask for a new copy.'};}
+}
 class BeachExperience {
   constructor(hooks) {
     this.h=hooks;this.type='Willow';this.audio=new BeachAudio();this.basis=null;this.auto=null;this.charge=null;this.preset='gold';
@@ -35,7 +45,9 @@ class BeachExperience {
             <textarea id="drone-text" rows="2" placeholder="Your message · 夏の夜 ✨" spellcheck="false" dir="auto" aria-describedby="drone-help drone-error"></textarea>
             <p id="drone-help">Your message first, then every third formation.</p>
             <p id="drone-error" role="status" aria-live="polite"></p>
-            <button id="drone-start" class="primary" type="submit" autofocus>Start drone show</button>
+            <div class="drone-launch-actions"><button id="drone-start" class="primary" type="submit" autofocus>Start drone show</button><button id="drone-share" type="button" aria-label="Copy autoplay link">Copy link ⧉</button></div>
+            <input id="drone-share-link" type="text" readonly hidden aria-label="Share link — select and copy">
+            <span id="drone-share-status" class="sr-only" role="status"></span>
           </div>
           <div class="drone-controls">
             <div id="drone-patterns" aria-label="First preset formation"></div>
@@ -59,6 +71,15 @@ class BeachExperience {
       button.onclick=()=>{this.droneStartIndex=index;document.querySelectorAll('#drone-patterns button').forEach((b,i)=>b.setAttribute('aria-pressed',String(i===index)));};document.getElementById('drone-patterns').append(button);
     });
     this.droneButton.onclick=()=>this.openDroneComposer();
+    document.getElementById('drone-share').onclick=()=>this.copyDroneLink();
+    const shared=hanabiSharedShow(location.href);
+    this.droneText.value=shared.message;this.shareError=shared.error;
+    document.fonts.ready.then(()=>{this.sharedReady=shared.autoplay&&!hooks.frozen;});
+    if(shared.autoplay){
+      const unlock=()=>{if(!this.audio.muted)this.audio.unlock().catch(()=>{});};
+      document.addEventListener('pointerdown',unlock,{once:true});
+      document.addEventListener('keydown',unlock,{once:true});
+    }
     this.droneDialog.querySelector('.close').onclick=()=>this.droneDialog.close();
     this.droneDialog.addEventListener('close',()=>{this.composing=false;this.droneButton.focus({preventScroll:true});});
     this.droneDialog.addEventListener('cancel',e=>{if(this.composing)e.preventDefault();});
@@ -100,13 +121,14 @@ class BeachExperience {
     hooks.canvas.addEventListener('pointerleave',()=>{if(!this.charge)this.reticle.hidden=true;});
     window.addEventListener('blur',()=>{this.cancelCharge();hooks.cancelInput();});
     document.addEventListener('visibilitychange',()=>{if(document.hidden){this.stopAuto();this.cancelCharge();hooks.cancelInput();this.audio.cancel();hooks.clear();}});
-    this.drawDial();this.hint('Choose a bloom in the water · tap or hold the sky');
+    this.drawDial();this.hint(shared.error||'Choose a bloom in the water · tap or hold the sky');
   }
   openDroneComposer() {
     this.cancelCharge();this.h.cancelInput();this.toggleDial(false);this.settings.hidden=true;
     document.getElementById('hint').classList.add('off');
     document.getElementById('drone-land').disabled=!this.h.droneShow.active(this.h.time());
     this.droneDialog.showModal();document.getElementById('drone-start').focus();this.previewDrones();
+    if(this.shareError){document.getElementById('drone-error').textContent=this.shareError;this.shareError='';}
   }
   droneSettings() {return {palette:document.getElementById('drone-palette').value,pace:document.getElementById('drone-pace').value,loop:document.getElementById('drone-loop').checked};}
   startDroneSequence(index=this.droneStartIndex) {
@@ -131,6 +153,28 @@ class BeachExperience {
       this.previewDrones();if(this.droneText.value.trim()&&!this.formation)return;
       this.startDroneSequence();
     } finally {this.droneLaunching=false;}
+  }
+  async copyDroneLink() {
+    if(this.composing)return;
+    this.previewDrones();if(this.droneText.value.trim()&&!this.formation)return;
+    const link=hanabiShareURL(location.href,this.droneText.value),button=document.getElementById('drone-share');
+    const fallback=document.getElementById('drone-share-link'),status=document.getElementById('drone-share-status');
+    fallback.hidden=true;clearTimeout(this.copyTimer);button.textContent='Copy link ⧉';
+    try {
+      await navigator.clipboard.writeText(link);
+      button.textContent='Copied ✓';status.textContent='Autoplay link copied';
+      clearTimeout(this.copyTimer);this.copyTimer=setTimeout(()=>button.textContent='Copy link ⧉',2200);
+    } catch {
+      fallback.value=link;fallback.hidden=false;fallback.focus();fallback.select();
+      status.textContent='Copy the selected link';
+    }
+  }
+  startSharedShow() {
+    this.sharedReady=false;
+    this.previewDrones();
+    if(this.droneText.value.trim()&&!this.formation){this.openDroneComposer();return;}
+    this.startDroneSequence();this.startAuto();
+    this.hint('Your sky is playing · tap for sound');
   }
   hint(text) {const el=document.getElementById('hint');el.textContent=text;el.classList.remove('off');clearTimeout(this.hintTimer);this.hintTimer=setTimeout(()=>el.classList.add('off'),6000);}
   toggleDial(open) {
@@ -166,7 +210,10 @@ class BeachExperience {
   async toggleAuto() {
     if(this.auto){this.stopAuto();this.hint('Auto show stopped · the last blooms will fade');return;}
     if(this.starting)return;this.starting=true;await this.audio.unlock().catch(()=>{});this.starting=false;
-    if(document.hidden||!this.basis||this.h.frozen)return;
+    this.startAuto();
+  }
+  startAuto() {
+    if(this.auto||document.hidden||!this.basis||this.h.frozen)return;
     const b=this.basis,n=Math.hypot(b.f[0],b.f[2]);this.showForward=[b.f[0]/n,0,b.f[2]/n];this.showRight=[-this.showForward[2],0,this.showForward[0]];
     this.showOrigin=[...b.pos];this.showWidth=Math.min(145,innerWidth/innerHeight*150);
     this.auto=new FireworkSequence(this.preset,this.h.time());this.finaleAnnounced=false;
@@ -225,6 +272,7 @@ class BeachExperience {
   }
   update(basis) {
     this.basis=basis;this.audio.listener(basis);this.positionControls(basis);
+    if(this.sharedReady&&!document.hidden)this.startSharedShow();
     this.h.droneShow.gentle=this.reduced;
     if(this.droneDialog.open){
       const status=this.h.droneShow.status(this.h.time()),label=document.getElementById('drone-sequence-status');if(label.textContent!==status)label.textContent=status;
@@ -241,3 +289,5 @@ class BeachExperience {
     }
   }
 }
+
+if(typeof module!=='undefined')module.exports={hanabiShareURL,hanabiSharedShow};

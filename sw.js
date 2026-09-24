@@ -1,6 +1,6 @@
 /* Network-first keeps local development fresh; the complete scene works offline. */
 const PREFIX = `hanabi:${self.registration.scope}:`;
-const CACHE = `${PREFIX}v2`;
+const CACHE = `${PREFIX}v3`;
 const FILES = ['./', 'index.html', 'experience.css', 'experience.js', 'fireworks.js',
   'drones.js', 'audio.js', 'pwa.js', 'manifest.webmanifest', 'LICENSE',
   'media/icons/hanabi.svg', 'media/icons/icon-192.png', 'media/icons/icon-512.png',
